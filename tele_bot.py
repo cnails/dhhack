@@ -264,14 +264,31 @@ def sampling(char_model, symbols, arguments):
     return generated_text
 
 """
+GPT-2
+"""
+
+import gpt_2_simple as gpt2
+import tensorflow as tf
+
+"""
 Bot
 """
 
 def startCommand(bot, update):
 	bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
 
+def textMessage2(bot, update):
+    input_string = '\n\n' + update.message.text.strip() + '\n'
+    # TODO: вынести наружу
+    sess = gpt2.start_tf_sess()
+    gpt2.load_gpt2(sess)
+    output_string = gpt2.generate(sess, return_as_list=True, prefix=input_string)[0]
+    output_string = output_string[len(input_string):]
+    output_string = re.sub('\n.*', '', output_string)
+    bot.send_message(chat_id=update.message.chat_id, text=output_string)
+
 def textMessage(bot, update):
-    input_string = update.message.text
+    input_string = '\n\n' + update.message.text.strip() + '\n'
     arguments = {
         'file': "LSTM_4000.model",
         'start_of_sequence': input_string,
@@ -279,6 +296,7 @@ def textMessage(bot, update):
         'temperature': 0.5,
         'cuda': 0
     }
+    # TODO: вынести наружу
     char_model = torch.load(arguments.get('file'), map_location='cpu')
     detransliterated_text = detransliterate(sampling(char_model, string.printable, arguments))
     detransliterated_text = detransliterated_text[len(input_string):]
