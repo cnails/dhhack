@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import apiai, json
 import requests as req
+import wit_ai
 updater = Updater(token='1041190715:AAFAP8UnMiQznA2ea1GG2iAg9laYiY9yb8E')
 dispatcher = updater.dispatcher
 
@@ -35,36 +36,47 @@ def videoMessage(bot, update):
 			f.write(video.content)
 		except Exception as e:
 			print(e)
-	bot.send_message(chat_id=update.message.chat_id, text=f'это аудиозапись {type_file} формата')
+	with open('video.wav', 'wb') as f:
+		try:
+			f.write(video.content)
+		except Exception as e:
+			print(e)
+	bot.send_message(chat_id=update.message.chat_id, text=f'это видеозапись {type_file} формата')
 	extract_audio(type_file)
 
 def audioMessage(bot, update):
 	type_file = update.message.audio.mime_type.split('/')[-1]
-	type_file = 'mp3' if type_file == 'mpeg' else type_file
+	# type_file = 'mp3' if type_file == 'mpeg' else type_file
 	file_info = bot.get_file(update.message.audio.file_id)
 	audio = req.get(file_info.file_path)
 	print(audio)
 	print(type_file)
 	try:
-		with open('audio.' + str(type_file), 'wb') as f:
+		with open('audio.wav', 'wb') as f:
 			try:
 				f.write(audio.content)
 			except Exception as e:
 				print(e)
 	except Exception as e:
 		print(e)
-	bot.send_message(chat_id=update.message.chat_id, text=f'это аудиозапись {type_file} формата')
+	words_in_wav = wit_ai.read_voice('audio.wav')
+	bot.send_message(chat_id=update.message.chat_id, text=f'{words_in_wav}')
 
 def voiceMessage(bot, update):
 	type_file = update.message.voice.mime_type.split('/')[-1]
 	file_info = bot.get_file(update.message.voice.file_id)
 	audio = req.get(file_info.file_path)
-	with open('voice.' + str(type_file), 'wb') as f:
+	with open('voice.mp3', 'wb') as f:
 		try:
 			f.write(audio.content)
 		except Exception as e:
 			print(e)
-	bot.send_message(chat_id=update.message.chat_id, text=f'это голосовое сообщение {type_file} формата')
+	# try:
+		# words_in_wav = wit_ai.read_voice('voice.wav')
+		# bot.send_message(chat_id=update.message.chat_id, text=f'{words_in_wav}')
+	# except Exception as e:
+		# print(e)
+	# bot.send_message(chat_id=update.message.chat_id, text=f'это голосовое сообщение {type_file} формата')
 
 start_command_handler = CommandHandler('start', startCommand)
 text_message_handler = MessageHandler(Filters.text, textMessage)
