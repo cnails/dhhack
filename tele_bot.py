@@ -2,15 +2,13 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import apiai, json
 import requests as req
 import wit_ai
-updater = Updater(token='1041190715:AAFAP8UnMiQznA2ea1GG2iAg9laYiY9yb8E')
-dispatcher = updater.dispatcher
 
 
 """
 LSTM sampling
 """
 
-import requests
+# import requests
 from collections import defaultdict
 import torch
 print('torch version', torch.__version__)
@@ -24,6 +22,7 @@ import matplotlib.pyplot as plt
 import random
 from itertools import cycle
 import json
+"""
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -262,7 +261,7 @@ def sampling(char_model, symbols, arguments):
         #     break
 
     return generated_text
-
+"""
 """
 GPT-2
 """
@@ -274,52 +273,87 @@ import tensorflow as tf
 Bot
 """
 
+updater = Updater(token='1041190715:AAFAP8UnMiQznA2ea1GG2iAg9laYiY9yb8E')
+dispatcher = updater.dispatcher
+print('hello')
+
+sess = gpt2.start_tf_sess()
+gpt2.load_gpt2(sess)
+
 def startCommand(bot, update):
 	bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
 
-def textMessage2(bot, update):
-    input_string = '\n\n' + update.message.text.strip() + '\n'
-    # TODO: вынести наружу
-    sess = gpt2.start_tf_sess()
-    gpt2.load_gpt2(sess)
-    output_string = gpt2.generate(sess, return_as_list=True, prefix=input_string)[0]
-    output_string = output_string[len(input_string):]
-    output_string = re.sub('\n.*', '', output_string)
-    bot.send_message(chat_id=update.message.chat_id, text=output_string)
-
 def textMessage(bot, update):
-    input_string = '\n\n' + update.message.text.strip() + '\n'
-    arguments = {
-        'file': "LSTM_4000.model",
-        'start_of_sequence': input_string,
-        'size_of_generated_sequence': 500,
-        'temperature': 0.5,
-        'cuda': 0
-    }
-    # TODO: вынести наружу
-    char_model = torch.load(arguments.get('file'), map_location='cpu')
-    detransliterated_text = detransliterate(sampling(char_model, string.printable, arguments))
-    detransliterated_text = detransliterated_text[len(input_string):]
-    detransliterated_text = re.sub('\d+', ' ', detransliterated_text)
-    detransliterated_text = re.sub(' +', ' ', detransliterated_text)
-    detransliterated_text = '\n'.join([sent.strip() for sent in detransliterated_text.split('\n')])
-    detransliterated_text = re.sub('^\n+', '', detransliterated_text)
-    detransliterated_text = re.sub('\n.*', '', detransliterated_text)
-    output_string = detransliterated_text.strip()
-    bot.send_message(chat_id=update.message.chat_id, text=output_string)
+	input_string = '\n\n' + update.message.text.strip() + '\n'
+	print(input_string)
+	try:
+		print('1')
+		print(sess)
+		output_string = gpt2.generate(sess, return_as_list=True, prefix=input_string)[0]
+		print('2')
+		output_string = output_string[len(input_string):]
+		print('3')
+		output_string = re.sub('\n.*', '', output_string)
+		print('4')
+		bot.send_message(chat_id=update.message.chat_id, text=output_string)
+	except Exception as e:
+		print(e)
 
-def text1MMessage(bot, update):
-	print(update)
-	request = apiai.ApiAI('cf5966ecf7894ea6ab4fa5f6955bdc54').text_request
-	request.lang = 'ru'
-	request.session_id = 'dhhack_bot'
-	request.query = update.message.text 
-	responseJson = json.loads(request.getresponse().read().decode('utf-8'))
-	response = responseJson['result']['fulfillment']['speech']
-	if response:
-		bot.send_message(chat_id=update.message.chat_id, text=response)
-	else:
-		bot.send_message(chat_id=update.message.chat_id, text='Я Вас не совсем понял!')
+# def textMessage(bot, update):
+# 	import os
+# 	input_string = '\n\n' + update.message.text.strip() + '\n'
+# 	print(input_string)
+# 	try:
+# 		print('1')
+# 		arguments = {
+# 			'file': "LSTM_50.model",
+# 			'start_of_sequence': input_string,
+# 			'size_of_generated_sequence': 50,
+# 			'temperature': 0.5,
+# 			'cuda': 0
+# 		}
+# 		print('2')
+# 		"""
+# 	    # TODO: вынести наружу
+# 		"""
+# 		print('3')
+# 		path = (os.path.join(os.path.abspath(os.path.dirname(__file__)), "LSTM_50.model"))
+# 		char_model = torch.load("LSTM_50.model", map_location='cpu')
+# 		print('4')
+# 		detransliterated_text = detransliterate(sampling(char_model, string.printable, arguments))
+# 		print('5')
+# 		detransliterated_text = detransliterated_text[len(input_string):]
+# 		print('6')
+# 		detransliterated_text = re.sub('\d+', ' ', detransliterated_text)
+# 		print('7')
+# 		detransliterated_text = re.sub(' +', ' ', detransliterated_text)
+# 		print('8')
+# 		detransliterated_text = '\n'.join([sent.strip() for sent in detransliterated_text.split('\n')])
+# 		print('9')
+# 		detransliterated_text = re.sub('^\n+', '', detransliterated_text)
+# 		print('10')
+# 		detransliterated_text = re.sub('\n.*', '', detransliterated_text)
+# 		print('11')
+# 		output_string = detransliterated_text.strip()
+# 		print('12')
+# 	except Exception as e:
+# 		print(e)
+# 		exit()
+# 	# print(f'out = {output_string}')
+# 	bot.send_message(chat_id=update.message.chat_id, text=output_string)
+
+# def text1MMessage(bot, update):
+# 	print(update)
+# 	request = apiai.ApiAI('cf5966ecf7894ea6ab4fa5f6955bdc54').text_request
+# 	request.lang = 'ru'
+# 	request.session_id = 'dhhack_bot'
+# 	request.query = update.message.text 
+# 	responseJson = json.loads(request.getresponse().read().decode('utf-8'))
+# 	response = responseJson['result']['fulfillment']['speech']
+# 	if response:
+# 		bot.send_message(chat_id=update.message.chat_id, text=response)
+# 	else:
+# 		bot.send_message(chat_id=update.message.chat_id, text='Я Вас не совсем понял!')
 
 def extract_audio(file_type):
 	import subprocess
@@ -349,8 +383,8 @@ def audioMessage(bot, update):
 	# type_file = 'mp3' if type_file == 'mpeg' else type_file
 	file_info = bot.get_file(update.message.audio.file_id)
 	audio = req.get(file_info.file_path)
-	print(audio)
-	print(type_file)
+	# print(audio)
+	# print(type_file)
 	try:
 		with open('audio.wav', 'wb') as f:
 			try:
@@ -359,18 +393,19 @@ def audioMessage(bot, update):
 				print(e)
 	except Exception as e:
 		print(e)
-	words_in_wav = wit_ai.read_voice('audio.wav')
-	bot.send_message(chat_id=update.message.chat_id, text=f'{words_in_wav}')
+	# words_in_wav = wit_ai.read_voice('audio.wav')
+	bot.send_message(chat_id=update.message.chat_id, text=f'it is audio')
 
 def voiceMessage(bot, update):
 	type_file = update.message.voice.mime_type.split('/')[-1]
 	file_info = bot.get_file(update.message.voice.file_id)
 	audio = req.get(file_info.file_path)
-	with open('voice.mp3', 'wb') as f:
+	with open('voice_tes.mp3', 'wb') as f:
 		try:
 			f.write(audio.content)
 		except Exception as e:
 			print(e)
+	bot.send_message(chat_id=update.message.chat_id, text=f'it is voice')
 	# try:
 		# words_in_wav = wit_ai.read_voice('voice.wav')
 		# bot.send_message(chat_id=update.message.chat_id, text=f'{words_in_wav}')
