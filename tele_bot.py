@@ -277,20 +277,27 @@ Bot
 def startCommand(bot, update):
 	bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
 
-def textMessage2(bot, update):
-    input_string = '\n\n' + update.message.text.strip() + '\n'
-    # TODO: вынести наружу
-    sess = gpt2.start_tf_sess()
-    gpt2.load_gpt2(sess)
-    output_string = gpt2.generate(sess, return_as_list=True, prefix=input_string)[0]
-    output_string = output_string[len(input_string):]
-    output_string = re.sub('\n.*', '', output_string)
-    bot.send_message(chat_id=update.message.chat_id, text=output_string)
 
 def textMessage(bot, update):
+    try:
+        input_string = '\n\n' + update.message.text.strip() + '\n'
+        print('input_string:', input_string)
+        # TODO: вынести наружу
+        tf.reset_default_graph()
+        sess = gpt2.start_tf_sess()
+        gpt2.load_gpt2(sess)
+        output_string = gpt2.generate(sess, return_as_list=True, prefix=input_string)[0]
+        output_string = output_string[len(input_string):]
+        output_string = re.sub('\n.*', '', output_string)
+        print('output_string:', output_string)
+        bot.send_message(chat_id=update.message.chat_id, text=output_string)
+    except Exception as e:
+        print("ERROR2:", e)
+
+def textMessage3(bot, update):
     input_string = '\n\n' + update.message.text.strip() + '\n'
     arguments = {
-        'file': "LSTM_4000.model",
+        'file': "LSTM_0.model",
         'start_of_sequence': input_string,
         'size_of_generated_sequence': 500,
         'temperature': 0.5,
