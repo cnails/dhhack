@@ -105,12 +105,9 @@ def encode_timecodes(file_with_timecodes, file_with_text):
         text = f.read().strip()
     output_text, indices = encode_obscene_words(text)
     output_text = output_text.strip().split()
+    new_lines = []
     for i, line in enumerate(lines):
-        triple = lines[i].strip().split()
-        if len(triple) == 3:
-            triple[-1] = output_text[i]
-        else:
-            triple.append(output_text[i])
-        lines[i] = ' '.join(triple)
+        if i in indices:
+            new_lines.append(line.strip())
     with open('encoded_file.txt', 'w', encoding='utf-8') as f:
-        f.write('\n'.join(lines))
+        f.write('\n'.join(new_lines))
